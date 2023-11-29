@@ -4,17 +4,15 @@ sys.path.append('/Users/jamesrogers/.git/blackjack-agent')
 
 
 from Environment.blackjack import cmp, score
-#draw_card, draw_hand, usable_ace, sum_hand, is_bust, is_natural
 
 class ValueIterationAgent:
     def __init__(self, gamma=1.0, theta=0.0001):
-        self.gamma = gamma  # discount factor
-        self.theta = theta  # threshold for convergence
-        self.state_values = np.zeros((32, 11, 2))  # value for each state
-        self.policy = np.zeros((32, 11, 2), dtype=int)  # policy: 0 for stick and 1 for hit
+        self.gamma = gamma  
+        self.theta = theta  
+        self.state_values = np.zeros((32, 11, 2))  
+        self.policy = np.zeros((32, 11, 2), dtype=int)  
 
     def value_iteration(self, env):
-        # Iterate until the value function converges
         while True:
             delta = 0
             for player_sum in range(1, 32):
@@ -25,18 +23,14 @@ class ValueIterationAgent:
                         self.state_values[player_sum, dealer_showing, usable_ace] = v_new
                         delta = max(delta, abs(v_old - v_new))
             
-            # Break out of the loop when the value function converges
             if delta < self.theta:
                 break
 
         self.extract_policy(env)
 
     def evaluate_actions(self, env, player_sum, dealer_showing, usable_ace):
-        # Evaluate the expected return of each action and return the maximum
         actions_values = np.zeros(env.action_space.n)
         for action in range(env.action_space.n):
-            # For simplicity, we assume equal probability for all possible next states
-            # This is a simplification, the actual environment is more complex
             for next_player_sum in range(1, 32):
                 for next_dealer_showing in range(1, 11):
                     for next_usable_ace in range(2):
@@ -59,7 +53,6 @@ class ValueIterationAgent:
         return reward, prob
 
     def extract_policy(self, env):
-        # Extract policy from the value function
         for player_sum in range(1, 32):
             for dealer_showing in range(1, 11):
                 for usable_ace in range(2):
