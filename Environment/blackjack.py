@@ -7,7 +7,6 @@ import gym
 from gym import spaces
 from gym.error import DependencyNotInstalled
 
-
 def cmp(a, b):
     return float(a > b) - float(a < b)
 
