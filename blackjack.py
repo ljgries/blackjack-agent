@@ -10,13 +10,14 @@ import math
 def cmp(a, b):
     return float(a > b) - float(a < b)
 
-class Deck:
-    def __init__(self, np_random):
+class Deck():
+    def __init__(self, np_random, number):
         self.np_random = np_random
+        self.number = number
         self.reset()
 
     def reset(self):
-        self.cards = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10] * 4
+        self.cards = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10] * self.number
         self.np_random.shuffle(self.cards)
 
     def draw_card(self):
@@ -66,13 +67,14 @@ def is_natural(hand):
 class BlackjackEnv(gym.Env):
     metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 4}
 
-    def __init__(self, render_mode: Optional[str] = None, natural=False, sab=False):
+    def __init__(self, render_mode: Optional[str] = None, natural=False, sab=False, number=6):
         self.action_space = spaces.Discrete(2)
         self.observation_space = spaces.Tuple(
             (spaces.Discrete(32), spaces.Discrete(11), spaces.Discrete(2), spaces.Discrete(10))
         )
         self.np_random = np.random.RandomState()
-        self.deck = Deck(self.np_random)
+        self.number = number
+        self.deck = Deck(self.np_random, number)
         self.natural = natural
         self.sab = sab
         self.render_mode = render_mode
