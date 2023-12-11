@@ -103,10 +103,7 @@ class ValueIterationAgent:
                     for usable_ace in range(2):
                         for temperature in range(10):
                             v_old = self.state_values[player_sum, dealer_showing, usable_ace, temperature]
-                            print(self.state_values.shape)
-                            print(self.state_values[player_sum, dealer_showing, usable_ace, temperature])
                             v_new = self.evaluate_actions(env, player_sum, dealer_showing, usable_ace, temperature)
-                            print(self.state_values.shape)
                             self.state_values[player_sum, dealer_showing, usable_ace, temperature] = v_new
                             delta = max(delta, abs(v_old - v_new))
             if delta < self.theta:
