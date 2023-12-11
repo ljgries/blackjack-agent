@@ -51,7 +51,7 @@ def play_game_with_policy(env, policy):
 
 
 
-def simulate_games(env, policy, num_games=1000):
+def simulate_games(env, policy, num_games=100000):
     results = {'wins': 0, 'losses': 0, 'draws': 0}
 
     for _ in range(num_games):
