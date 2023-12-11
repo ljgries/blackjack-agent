@@ -153,21 +153,19 @@ class ValueIterationAgent:
             
             return expected_reward
         else:  # hit
-            # Calculate the expected reward for hitting based on temperature-dependent values
             expected_reward = 0
             for card_value, prob in enumerate(self.temperature_values[temperature]):
                 new_sum = player_sum + card_value + 1  # card_value is 0-indexed, card values start from 1
-                if usable_ace: # Choose state with higher utility
-                    if new_sum + 10 < 32:
-                        if self.state_values[new_sum, dealer_showing, 1, temperature] < \
-                        self.state_values[new_sum + 10, dealer_showing, 1, temperature]:
-                            new_sum += 10
+                if usable_ace and new_sum + 10 <= 21:  # Check for usable ace
+                    new_sum += 10
                 if new_sum > 21:
                     reward = -1  # bust
                 else:
                     # Recursively calculate the value of the new state
-                    reward = self.state_values[new_sum, dealer_showing, int(new_sum <= 21 and (usable_ace or card_value == 0)), temperature]
+                    reward = self.state_values[new_sum, dealer_showing, int(new_sum <= 21), temperature]
+
                 expected_reward += prob * reward
+
             return expected_reward
 
     def extract_policy(self, env):
@@ -199,4 +197,4 @@ print("Learned Policy:")
 print(agent.policy)
 
 # Save the learned policy as 'learnedpolicy.npy'
-np.save('learnedpolicy2.npy', agent.policy)
+#np.save('learnedpolicy2.npy', agent.policy)
