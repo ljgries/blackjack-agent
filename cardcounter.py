@@ -154,8 +154,10 @@ class ValueIterationAgent:
             for card_value, prob in enumerate(self.temperature_values[temperature]):
                 new_sum = player_sum + card_value + 1  # card_value is 0-indexed, card values start from 1
                 if usable_ace: # Choose state with higher utility
-                    if self.state_values[new_sum, dealer_showing, 1, temperature] < self.state_values[new_sum + 10, dealer_showing, 1, temperature]:
-                        new_sum += 10
+                    if new_sum + 10 < 32:
+                        if self.state_values[new_sum, dealer_showing, 1, temperature] < \
+                        self.state_values[new_sum + 10, dealer_showing, 1, temperature]:
+                            new_sum += 10
                 if new_sum > 21:
                     reward = -1  # bust
                 else:
