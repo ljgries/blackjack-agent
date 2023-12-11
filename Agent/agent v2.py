@@ -30,9 +30,28 @@ class ValueIterationAgent:
 
     def calculate_state_value(self, player_sum, dealer_showing, usable_ace, action):
         if action == 0:  # stick
-            return cmp(player_sum, dealer_showing)  # Compare player sum and dealer showing card
+            return self._evaluate_stick(player_sum, dealer_showing)
         else:  # hit
             return 0 if player_sum <= 21 else -1  # Reward for hitting
+
+    def _evaluate_stick(self, player_sum, dealer_showing):
+        dealer_probs = self._calculate_dealer_probabilities(dealer_showing)
+        expected_reward = 0
+
+        for dealer_sum, prob in dealer_probs.items():
+            if dealer_sum == 'bust':
+                expected_reward += prob
+            elif dealer_sum != 'bust' and int(dealer_sum) > player_sum:
+                expected_reward -= prob
+            elif dealer_sum != 'bust' and int(dealer_sum) < player_sum:
+                expected_reward += prob
+
+        return expected_reward
+
+    def _calculate_dealer_probabilities(self, dealer_showing):
+        outcomes = ['17', '18', '19', '20', '21', 'bust']
+        probability_per_outcome = 1 / len(outcomes)
+        return {outcome: probability_per_outcome for outcome in outcomes}
 
     def extract_policy(self, env):
         for player_sum in range(1, 32):
