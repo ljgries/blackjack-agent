@@ -96,6 +96,7 @@ class ValueIterationAgent:
         self.policy = np.zeros((32, 11, 2, 10), dtype=int)  # Policy with temperature
 
     def value_iteration(self, env):
+        count = 1
         while True:
             delta = 0
             for player_sum in range(1, 32):
@@ -108,6 +109,9 @@ class ValueIterationAgent:
                             delta = max(delta, abs(v_old - v_new))
             if delta < self.theta:
                 break
+            else:
+                print(f'{count}: {delta}')
+                count += 1
         self.extract_policy(env)
 
     def evaluate_actions(self, env, player_sum, dealer_showing, usable_ace, temperature):
