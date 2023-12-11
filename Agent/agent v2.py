@@ -30,7 +30,30 @@ class ValueIterationAgent:
 
     def calculate_state_value(self, player_sum, dealer_showing, usable_ace, action):
         if action == 0:  # stick
-            return self._evaluate_stick(player_sum, dealer_showing)
+            # Dictionary, will contain the dealer's odds of achieving these hands (sticking on a soft 17)
+            # Could be memoized
+            dealer_odds = {17: 0.0, 18: 0.0, 19: 0.0, 20: 0.0, 21: 0.0}
+
+            # Busting will be the probability of none of the above
+            bust = 1.0
+            # Should calculate the odds of the dealer achieving each of the above hands
+            self._calculate_dealer_odds(dealer_showing, dealer_odds)
+            for dealer_hand_value in dealer_odds:
+                bust -= dealer_odds[dealer_hand_value]
+            
+            expected_reward = 0.0
+            
+            for dealer_hand_value in dealer_odds:
+                if dealer_hand_value > player_sum:
+                    expected_reward -= 1 * dealer_odds[dealer_hand_value]
+                elif dealer_hand_value == player_sum:
+                    expected_reward += 0
+                elif dealer_hand_value < player_sum:
+                    expected_reward += 1 * dealer_odds[dealer_hand_value]
+            
+            expected_reward += 1 * bust
+            
+            return expected_reward
         else:  # hit
             return 0 if player_sum <= 21 else -1  # Reward for hitting
 
@@ -48,10 +71,16 @@ class ValueIterationAgent:
 
         return expected_reward
 
-    def _calculate_dealer_probabilities(self, dealer_showing):
-        outcomes = ['17', '18', '19', '20', '21', 'bust']
-        probability_per_outcome = 1 / len(outcomes)
-        return {outcome: probability_per_outcome for outcome in outcomes}
+    def _calculate_dealer_odds(self, dealer_showing, dealer_odds, weight = 1.0):
+        CARD_ODDS = {1: 1/13, 2:1/13, 3:1/13, 4:1/13, 5:1/13, 6:1/13, 7:1/13, 8:1/13, 9:1/13, 10:4/13}
+        for card_value, prob in CARD_ODDS.items():
+                dealer_sum = dealer_showing + card_value
+                if dealer_sum in dealer_odds:
+                    dealer_odds[dealer_sum] += weight * prob
+                else:
+                    if dealer_sum < 21:
+                        ## BUGFIX ## was missing prob * weight
+                        self._calculate_dealer_odds(dealer_sum, dealer_odds, weight = prob * weight)
 
     def extract_policy(self, env):
         for player_sum in range(1, 32):

@@ -108,7 +108,8 @@ class BlackjackEnv(gym.Env):
     
     def reset(self, seed: Optional[int] = None, options: Optional[dict] = None):
         super().reset(seed=seed)
-        self.deck.reset()
+        if (len(self.deck) / (self.number * 52)) < 0.3:
+            self.deck.reset()
         self.dealer = self.deck.draw_hand()
         self.player = self.deck.draw_hand()
         temperature = self.deck.calc_temperature()
