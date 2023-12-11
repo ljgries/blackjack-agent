@@ -1,7 +1,5 @@
 import gym
 import numpy as np
-import sys
-sys.path.append('/Users/jamesrogers/.git/blackjack-agent')
 from blackjack import BlackjackEnv
 
 class GameState:
@@ -25,25 +23,20 @@ def play_game_with_policy(env, policy):
     done = False
 
     while not done:
-        player_sum, dealer_card, usable_ace, temperature = observation  # Unpack including temperature
+        # Check if the observation is a tuple containing another tuple and a dictionary
+        if isinstance(observation, tuple) and len(observation) == 2 and isinstance(observation[0], tuple):
+            game_state = observation[0]
+        else:
+            game_state = observation
 
+        player_sum, dealer_card, usable_ace, temperature = game_state  # Unpack including temperature
         usable_ace = int(usable_ace)  # Convert boolean usable_ace to integer for indexing
-
-        # Adjust to access policy with temperature
         action = policy[player_sum - 1][dealer_card - 1][usable_ace][temperature]
-
         observation, reward, terminated, truncated, _ = env.step(action)
         total_reward += reward
-
         done = terminated or truncated
 
     return total_reward
-
-
-
-
-
-
 
 
 def simulate_games(env, policy, num_games=1000):
@@ -67,5 +60,7 @@ best_actions = np.load('learnedpolicy2.npy')
 env = BlackjackEnv()
 
 # Simulate the games
-results = simulate_games(env, best_actions, 1000)
+num_games = 1000  # Number of games you want to simulate
+results = simulate_games(env, best_actions, num_games)
 print(f"Simulation results: {results}")
+
