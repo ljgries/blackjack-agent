@@ -49,9 +49,19 @@ class ValueIterationAgent:
         return expected_reward
 
     def _calculate_dealer_probabilities(self, dealer_showing):
-        outcomes = ['17', '18', '19', '20', '21', 'bust']
-        probability_per_outcome = 1 / len(outcomes)
-        return {outcome: probability_per_outcome for outcome in outcomes}
+        card_probabilities = {1: 1/13, 2: 1/13, 3: 1/13, 4: 1/13, 5: 1/13, 6: 1/13, 7: 1/13, 8: 1/13, 9: 1/13, 10: 4/13}
+        dealer_probabilities = {}
+
+        for card_value, prob in card_probabilities.items():
+            dealer_sum = dealer_showing + card_value
+            if dealer_sum < 21:
+                if dealer_sum in dealer_probabilities:
+                    dealer_probabilities[dealer_sum] += prob
+                else:
+                    dealer_probabilities[dealer_sum] = prob
+
+        return dealer_probabilities
+
 
     def extract_policy(self, env):
         for player_sum in range(1, 32):
