@@ -127,14 +127,23 @@ class ValueIterationAgent:
                     dealer_odds[dealer_sum] += weight * prob
                 else:
                     if dealer_sum < 21:
-                        self._calculate_dealer_odds(dealer_sum, temperature, dealer_odds, weight = prob)
+                        ## BUGFIX ## was missing prob * weight
+                        self._calculate_dealer_odds(dealer_sum, temperature, dealer_odds, weight = prob * weight)
 
     def calculate_state_value(self, player_sum, dealer_showing, usable_ace, action, temperature):
         if action == 0:  # stick
-            # The reward for sticking is independent of the temperature
+
+            # The expected_reward will be accumulated
             expected_reward = 0
+
+            # Dictionary, will contain the dealer's odds of achieving these hands (sticking on a soft 17)
+            # Could be memoized
             dealer_odds = {17: 0.0, 18: 0.0, 19: 0.0, 20: 0.0, 21: 0.0}
+
+            # Busting will be the probability of none of the above
             bust = 1.0
+
+            # Should calculate the odds of the dealer achieving each of the above hands
             self._calculate_dealer_odds(dealer_showing, temperature, dealer_odds)
             for dealer_hand_value in dealer_odds:
                 bust -= dealer_odds[dealer_hand_value]
@@ -146,7 +155,7 @@ class ValueIterationAgent:
                     expected_reward -= 1 * dealer_odds[dealer_hand_value]
                 elif dealer_hand_value == player_sum:
                     expected_reward += 0
-                elif dealer_hand_value > player_sum:
+                else:
                     expected_reward += 1 * dealer_odds[dealer_hand_value]
             
             expected_reward += 1 * bust
@@ -197,4 +206,4 @@ print("Learned Policy:")
 print(agent.policy)
 
 # Save the learned policy as 'learnedpolicy.npy'
-#np.save('learnedpolicy2.npy', agent.policy)
+np.save('learnedpolicy2.npy', agent.policy)
