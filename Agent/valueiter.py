@@ -72,5 +72,5 @@ best_actions = np.load('learnedpolicy.npy')
 env = gym.make('Blackjack-v1')
 
 # Simulate the games
-results = simulate_games(env, best_actions, 1000)
+results = simulate_games(env, best_actions, 100000)
 print(f"Simulation results: {results}")
