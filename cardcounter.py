@@ -5,7 +5,7 @@ sys.path.append('/Users/jamesrogers/.git/blackjack-agent')
 from blackjack import BlackjackEnv
 
 class ValueIterationAgent:
-    def __init__(self, temperature_values, gamma=1.0, theta=0.0001):
+    def __init__(self, temperature_values, gamma=1, theta=0.0001):
         self.temperature_values = temperature_values
         self.gamma = gamma
         self.theta = theta

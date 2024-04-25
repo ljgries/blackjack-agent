@@ -60,7 +60,11 @@ best_actions = np.load('learnedpolicy2.npy')
 env = BlackjackEnv()
 
 # Simulate the games
+<<<<<<< Updated upstream
 num_games = 10000000  # Number of games you want to simulate
+=======
+num_games = 1000  # Number of games you want to simulate
+>>>>>>> Stashed changes
 results = simulate_games(env, best_actions, num_games)
 print(f"Simulation results: {results}")
 

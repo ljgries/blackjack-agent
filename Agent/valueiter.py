@@ -51,7 +51,11 @@ def play_game_with_policy(env, policy):
 
 
 
+<<<<<<< Updated upstream
 def simulate_games(env, policy, num_games=100000):
+=======
+def simulate_games(env, policy, num_games=10000000):
+>>>>>>> Stashed changes
     results = {'wins': 0, 'losses': 0, 'draws': 0}
 
     for _ in range(num_games):
@@ -72,5 +76,9 @@ best_actions = np.load('learnedpolicy.npy')
 env = gym.make('Blackjack-v1')
 
 # Simulate the games
+<<<<<<< Updated upstream
 results = simulate_games(env, best_actions, 100000)
+=======
+results = simulate_games(env, best_actions, 10000000)
+>>>>>>> Stashed changes
 print(f"Simulation results: {results}")
