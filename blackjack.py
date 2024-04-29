@@ -7,17 +7,19 @@ from gym.error import DependencyNotInstalled
 import random
 import math
 
+
 def cmp(a, b):
     return float(a > b) - float(a < b)
 
-class Deck():
+
+class Deck:
     def __init__(self, np_random, number):
         self.np_random = np_random
         self.number = number
         self.reset()
 
     def reset(self):
-        self.cards = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10] * self.number
+        self.cards = [11, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10] * self.number
         self.np_random.shuffle(self.cards)
 
     def draw_card(self):
@@ -31,46 +33,89 @@ class Deck():
     def scale_value(self, value):
         scaled_value = ((value - 6.0) / (7.8 - 6.0)) * 9
         return scaled_value
-    
+
     def __str__(self):
         result = ""
         for card in self.cards:
             result += str(card) + "\n"
         return result
-    
+
     def __len__(self):
         return len(self.cards)
 
+    def categorize(self, value):
+        # Define the breakpoints for the categories (calculated as deciles of distribution)
+        # This approach ensures approximately equal distribution in states across categories
+        # and thus should theoretically maximize the utility of the heuristic.
+        deciles = [
+            7.14893617,
+            7.22043011,
+            7.26219512,
+            7.28911565,
+            7.30964467,
+            7.33218467,
+            7.36220472,
+            7.40425532,
+            7.47742178,
+            8.242105263157894,
+        ]
+
+        # Find the category for the given value
+        for i, breakpoint in enumerate(deciles):
+            if value < breakpoint:
+                return i
+
+        return 9  # Return the last category if value is not less than any breakpoint
+
     def calc_temperature(self):
-        deck_value = sum(self.cards)
-        avg_value = deck_value / len(self.cards)
-        temperature = math.floor(self.scale_value(avg_value))
+        avg_value = self.get_avg()
+
+        temperature = self.categorize(avg_value)
         return temperature
+
+    def get_avg(self):
+        deck_value = 0
+        for card in self.cards:
+            deck_value += card
+        return float(deck_value) / len(self)
+
 
 def usable_ace(hand):
     return 1 in hand and sum(hand) + 10 <= 21
+
 
 def sum_hand(hand):
     if usable_ace(hand):
         return sum(hand) + 10
     return sum(hand)
 
+
 def is_bust(hand):
     return sum_hand(hand) > 21
+
 
 def score(hand):
     return 0 if is_bust(hand) else sum_hand(hand)
 
+
 def is_natural(hand):
     return sorted(hand) == [1, 10]
+
 
 class BlackjackEnv(gym.Env):
     metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 4}
 
-    def __init__(self, render_mode: Optional[str] = None, natural=False, sab=False, number=6):
+    def __init__(
+        self, render_mode: Optional[str] = None, natural=False, sab=False, number=6
+    ):
         self.action_space = spaces.Discrete(2)
         self.observation_space = spaces.Tuple(
-            (spaces.Discrete(32), spaces.Discrete(11), spaces.Discrete(2), spaces.Discrete(10))
+            (
+                spaces.Discrete(32),
+                spaces.Discrete(11),
+                spaces.Discrete(2),
+                spaces.Discrete(10),
+            )
         )
         self.np_random = np.random.RandomState()
         self.number = number
@@ -96,7 +141,12 @@ class BlackjackEnv(gym.Env):
             reward = cmp(score(self.player), score(self.dealer))
             if self.sab and is_natural(self.player) and not is_natural(self.dealer):
                 reward = 1.0
-            elif not self.sab and self.natural and is_natural(self.player) and reward == 1.0:
+            elif (
+                not self.sab
+                and self.natural
+                and is_natural(self.player)
+                and reward == 1.0
+            ):
                 reward = 1.5
         temperature = self.deck.calc_temperature()
         if self.render_mode == "human":
@@ -105,7 +155,7 @@ class BlackjackEnv(gym.Env):
 
     def _get_obs(self):
         return (sum_hand(self.player), self.dealer[0], usable_ace(self.player))
-    
+
     def reset(self, seed: Optional[int] = None, options: Optional[dict] = None):
         super().reset(seed=seed)
         self.deck.reset()
@@ -174,25 +224,37 @@ class BlackjackEnv(gym.Env):
             font = pygame.font.Font(os.path.join(cwd, path), size)
             return font
 
-        small_font = get_font(os.path.join("font", "Minecraft.ttf"), screen_height // 15)
-        dealer_text = small_font.render("Dealer: " + str(dealer_card_value), True, white)
+        small_font = get_font(
+            os.path.join("font", "Minecraft.ttf"), screen_height // 15
+        )
+        dealer_text = small_font.render(
+            "Dealer: " + str(dealer_card_value), True, white
+        )
         dealer_text_rect = self.screen.blit(dealer_text, (spacing, spacing))
 
         def scale_card_img(card_img):
             return pygame.transform.scale(card_img, (card_img_width, card_img_height))
 
         dealer_card_img = scale_card_img(
-            get_image(os.path.join("img", f"{self.dealer_top_card_suit}{self.dealer_top_card_value_str}.png"))
+            get_image(
+                os.path.join(
+                    "img",
+                    f"{self.dealer_top_card_suit}{self.dealer_top_card_value_str}.png",
+                )
+            )
         )
         dealer_card_rect = self.screen.blit(
             dealer_card_img,
-            (screen_width // 2 - card_img_width - spacing // 2, dealer_text_rect.bottom + spacing)
+            (
+                screen_width // 2 - card_img_width - spacing // 2,
+                dealer_text_rect.bottom + spacing,
+            ),
         )
 
         hidden_card_img = scale_card_img(get_image(os.path.join("img", "Card.png")))
         self.screen.blit(
             hidden_card_img,
-            (screen_width // 2 + spacing // 2, dealer_text_rect.bottom + spacing)
+            (screen_width // 2 + spacing // 2, dealer_text_rect.bottom + spacing),
         )
 
         player_text = small_font.render("Player", True, white)
@@ -204,14 +266,20 @@ class BlackjackEnv(gym.Env):
         player_sum_text = large_font.render(str(player_sum), True, white)
         player_sum_text_rect = self.screen.blit(
             player_sum_text,
-            (screen_width // 2 - player_sum_text.get_width() // 2, player_text_rect.bottom + spacing)
+            (
+                screen_width // 2 - player_sum_text.get_width() // 2,
+                player_text_rect.bottom + spacing,
+            ),
         )
 
         if usable_ace:
             usable_ace_text = small_font.render("usable ace", True, white)
             self.screen.blit(
                 usable_ace_text,
-                (screen_width // 2 - usable_ace_text.get_width() // 2, player_sum_text_rect.bottom + spacing // 2)
+                (
+                    screen_width // 2 - usable_ace_text.get_width() // 2,
+                    player_sum_text_rect.bottom + spacing // 2,
+                ),
             )
         if self.render_mode == "human":
             pygame.event.pump()
@@ -225,5 +293,6 @@ class BlackjackEnv(gym.Env):
     def close(self):
         if hasattr(self, "screen"):
             import pygame
+
             pygame.display.quit()
             pygame.quit()

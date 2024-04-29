@@ -54,7 +54,7 @@ def simulate_games(env, policy, num_games=1000):
     return results
 
 # Load the policy array
-best_actions = np.load('learnedpolicy2.npy')
+best_actions = np.load('learnedpolicy3.npy')
 
 # Setup the environment
 env = BlackjackEnv()
