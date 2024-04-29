@@ -17,6 +17,7 @@ class ValueIterationAgent:
         while True:
             delta = 0
             for player_sum in range(1, 32):
+                print("Player sum:" + str(player_sum))
                 for dealer_showing in range(1, 11):
                     for usable_ace in range(2):
                         for temperature in range(10):
@@ -116,6 +117,8 @@ temperature_values = np.load('probabilities.npy')
 
 # Initialize the agent and perform value iteration
 agent = ValueIterationAgent(temperature_values)
+print("Agent successfully initialized...")
+print("Value iteration beginning...")
 agent.value_iteration(env)
 
 # Display the learned policy
@@ -123,4 +126,4 @@ print("Learned Policy:")
 print(agent.policy)
 
 # Save the learned policy as 'learnedpolicy.npy'
-np.save('learnedpolicy2.npy', agent.policy)
+np.save('learnedpolicy3.npy', agent.policy)
